@@ -1,0 +1,268 @@
+// This file is part of nand2tetris, as taught in The Hebrew University, and
+// was written by Aviv Yaish. It is an extension to the specifications given
+// [here](https://www.nand2tetris.org) (Shimon Schocken and Noam Nisan, 2017),
+// as allowed by the Creative Common Attribution-NonCommercial-ShareAlike 3.0
+// Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
+
+/**
+ * A library of commonly used mathematical functions.
+ * Note: Jack compilers implement multiplication and division using OS method calls.
+ */
+class Math {
+        static Array twoToThe;
+        static int twoQYHelper;
+        /** Initializes the library. */
+        function void init() {
+            let twoToThe= Array.new(16);
+            let twoToThe[0]=1;
+            let twoToThe[1]=2;
+            let twoToThe[2]=4;
+            let twoToThe[3]=8;
+            let twoToThe[4]=16;
+            let twoToThe[5]=32;
+            let twoToThe[6]=64;
+            let twoToThe[7]=128;
+            let twoToThe[8]=256;
+            let twoToThe[9]=512;
+            let twoToThe[10]=1024;
+            let twoToThe[11]=2048;
+            let twoToThe[12]=4096;
+            let twoToThe[13]=8192;
+            let twoToThe[14]=16384;
+            let twoToThe[15]=(^(16384));
+            //let twoQYHelper=0;
+            return;
+        }
+
+
+        /** Returns the absolute value of x. */
+        function int abs(int x) {
+            if(x>0){
+                return x;
+            }
+            return -x;
+        }
+
+        /** 
+         * Returns the product of x and y. 
+         * When a Jack compiler detects the multiplication operator '*' in the 
+         * program's code, it handles it by invoking this method. In other words,
+         * the Jack expressions x*y and multiply(x,y) return the same value.
+         */
+        function int multiply(int x, int y) {
+            // Pseudocode:
+            // 1. let sum = 0
+            // 2. let shiftedx = x
+            // 3. for i = 0 ... n-1 do
+            // 4.   if ((i-th bit of y) == 1)
+            // 5.      let sum = sum + shiftedx
+            // 6.   let shiftedx = 2*shiftedx
+            // 7. return sum
+            var int sum, shiftedx, i, n;
+            var boolean isNeg;
+            let sum = 0;
+            let i=0;
+            let n=16;
+            let isNeg = false;
+     
+            if ((x < 0) & (y > 0)) {
+                let isNeg = true;
+                let x = -x;
+            }
+
+            if ((x > 0) & (y < 0)) {
+                let isNeg = true;
+                let y = -y;
+            }
+            if((x<0) & (y<0)){
+                let x = -x;
+                let y = -y;
+            }
+            let shiftedx = x;
+
+            while(i < (n-1) ){
+                if(twoToThe[i] & y){
+                    let sum = (sum + shiftedx);
+                }
+                let shiftedx = (^(shiftedx));
+                let i=(i+1);
+            }
+
+            if (isNeg)
+            {
+                return (-sum);
+            }
+
+            return sum;
+        }
+        /**
+        * calculates x*x in some-efficient way
+        */
+        function int multiplyOneArg(int x) {
+            // Pseudocode:
+            // 1. let sum = 0
+            // 2. let shiftedx = x
+            // 3. for i = 0 ... n-1 do
+            // 4.   if ((i-th bit of y) == 1)
+            // 5.      let sum = sum + shiftedx
+            // 6.   let shiftedx = 2*shiftedx
+            // 7. return sum
+            var int sum, shiftedx, i, n;
+            let sum = 0;
+            let i=0;
+            let n=16;
+            let shiftedx = x;
+
+            while(i < (n-1)){
+                if(twoToThe[i] & x){
+                    let sum = (sum + shiftedx);
+                }
+                let shiftedx = (^(shiftedx));
+                let i=(i+1);
+            }
+
+            return sum;
+        }
+
+
+
+
+        /** 
+         * Returns the integer part of x/y.
+         * When a Jack compiler detects the multiplication operator '/' in the 
+         * program's code, it handles it by invoking this method. In other words,
+         * the Jack expressions x/y and divide(x,y) return the same value.
+         */
+        function int divide(int x, int y) {
+            // This should be implemented without using multiplication.
+            // Hint: updating the value of 2*q*y in the "if" statement requires
+            // at most a single addition operator at every recursion step.
+            // Pseudocode:
+            // 1. if (y > x) return 0
+            // 2. let q = divide(x, 2*y)
+            // 3. if ((x - 2*q*y) < y)
+            // 4.   return 2*q
+            // 5. else
+            // 6.   return 2*q + 1
+            var int qMultiY, counter,q,yqMin,yqMax;
+            var boolean isNeg;
+            let qMultiY = 0;
+            let counter = 0;
+            let  isNeg = false;
+
+            if ((x < 0) & (y > 0)) {
+                let isNeg = true;
+                let x = -x;
+            }
+            if ((x > 0) & (y < 0)) {
+                let isNeg = true;
+                let y = -y;
+            }
+            if((x<0) & (y<0)){
+                let x = -x;
+                let y = -y;
+            }
+
+            if ((y > x) | (y<0) )  {
+                let twoQYHelper=0; // for the next time
+                return 0;
+            }
+            let q = Math.divide(x, (^(y)));
+/**
+            let yqMin = Math.min(y, q); // maybe negative? should we handle it?
+            let yqMax = Math.max(y, q); // maybe negative? should we handle it?
+            while(~(counter = yqMin))
+            {
+                let qMultiY = (qMultiY + yqMax);
+                let counter= counter+1;
+            }
+*/
+
+            if ((x - twoQYHelper) < y) {
+                if(isNeg){
+                    return -((^(q)));
+                }
+                return ((^(q)));
+            }
+            else {
+                let twoQYHelper = twoQYHelper+y;
+                if(isNeg){
+                    return -(((^(q))) + 1);
+                }
+                return (((^(q))) + 1);
+            }
+        }
+
+        /** Returns the integer part of the square root of x. */
+        function int sqrt(int x) {
+            // This should be implemented without using multiplication or division.
+            // Pseudocode (where '**' is the mathematical power function):
+            // 1. let y = 0
+            // 2. for j = (n/2 - 1) ... 0 do
+            // 3.   if ((y + 2**j)**2 <= x):
+            //       then let y = y + 2**j
+            // 4. return y
+           
+            var int y, j,innerCounter, twoPowerTwoJ, twoPowerJPlusOne, secondInnerCounter, yMultTwoPowerJPlusOne;
+            var int thirdInnerCounter, fourthInnerCounter, yPowerTwo, result, twoPowerJ;
+            
+            if(x < 0) {
+                do Sys.error(4);
+            }
+
+            let y = 0;
+            let j = 7; // 16/2-1=7
+            let twoPowerTwoJ = 1; // we want twoPowerTwoJ to be 2**(2j)
+            let twoPowerJPlusOne = 1; // we want twoPowerJPlusOne to be 2**(j+1)
+            let yMultTwoPowerJPlusOne = 0; 
+            let yPowerTwo = 0; 
+            let twoPowerJ = 0; 
+
+            while(~(j<0)) {
+                // calc 2^2j shifts
+                let twoPowerTwoJ = twoToThe[(^(j))];
+                let twoPowerJ=twoToThe[j];
+
+                while((y+twoPowerJ) > 181){
+                    let j=j-1;
+                    let twoPowerJ=twoToThe[j];
+                }
+                // calc 2^j+1
+                let twoPowerJPlusOne=twoToThe[(j+1)];
+                // calc (2^j+1)y
+                let fourthInnerCounter = 0;
+                let yMultTwoPowerJPlusOne = y;
+                while(fourthInnerCounter<(j+1)) {
+                    let yMultTwoPowerJPlusOne = (^(yMultTwoPowerJPlusOne));
+                    let fourthInnerCounter = (fourthInnerCounter + 1);
+                } 
+
+                // calc y^2
+                let yPowerTwo = Math.multiplyOneArg(y);
+
+
+                let result = (yPowerTwo + yMultTwoPowerJPlusOne + twoPowerTwoJ); // res =(y + 2**j)**2 
+                if (~(result>x)){
+                    let y=(y+ twoPowerJ); // y = y + 2**j
+                }
+                let j=(j-1);
+            }
+            return y;
+        }
+
+        /** Returns the greater number. */
+        function int max(int a, int b) {
+            if(a>b) {
+                return a;
+            }
+            return b;
+        }
+
+        /** Returns the smaller number. */
+        function int min(int a, int b) {
+            if(a>b) {
+                return b;
+            }
+            return a;
+        }
+}
